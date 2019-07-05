@@ -25,29 +25,23 @@ const EmailSchema = mongoose.Schema({
     mail: {
         accepted: [{
             type: String,
-          }],
-          rejected: [{type: String}],
-          envelopeTime: {
-              type: Number
-          },
-          messageTime: {
+        }],
+        rejected: [{
+            type: String
+        }],
+        envelopeTime: {
             type: Number
         },
-          messageSize: {
+        messageTime: {
             type: Number
         },
-          response: {
+        messageSize: {
+            type: Number
+        },
+        response: {
             type: String
         },
-          envelope: {
-            from: {
-                type: String
-            },
-            to:[{
-                type: String
-            }]
-          },
-          messageId: {
+        messageId: {
             type: String
         }
     }

@@ -4,6 +4,7 @@ const AuthControler = require('./app/controllers/AuthController');
 const CostCenterController = require('./app/controllers/CostCenterController');
 const SmsController = require('./app/controllers/SmsController');
 const EmailController = require('./app/controllers/EmailController');
+const CostControler = require('./app/controllers/CostController');
 
 routes.post('/user', AuthControler.store);
 routes.post('/auth', AuthControler.session);
@@ -17,8 +18,15 @@ routes.delete('/cost_center/:id', CostCenterController.destroy);
 
 routes.post('/send_sms', SmsController.sendSms);
 routes.get('/sms/date', SmsController.searchForDate);
-routes.get('/sms', SmsController.showById);
+routes.get('/sms/:id', SmsController.showById);
 
 routes.post('/send_email', EmailController.sendEmail);
+routes.get('/email/date', EmailController.searchForDate);
+routes.get('/email/:id', EmailController.showById);
+
+routes.post('/cost', CostControler.store);
+routes.get('/cost', CostControler.index);
+routes.put('/cost/:id', CostControler.update);
+routes.delete('/cost/:id', CostControler.destroy);
 
 module.exports = routes;

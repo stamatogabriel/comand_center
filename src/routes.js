@@ -4,11 +4,15 @@ const AuthControler = require('./app/controllers/AuthController');
 const CostCenterController = require('./app/controllers/CostCenterController');
 const SmsController = require('./app/controllers/SmsController');
 const EmailController = require('./app/controllers/EmailController');
-const CostControler = require('./app/controllers/CostController');
+const BillController = require('./app/controllers/BillController');
 
-routes.post('/user', AuthControler.store);
+const AuthMiddleware = require('./app/middlewares/auth');
+
 routes.post('/auth', AuthControler.session);
 
+routes.use(AuthMiddleware);
+
+routes.post('/user', AuthControler.store);
 routes.post('/cost_center', CostCenterController.store);
 routes.get('/cost_center', CostCenterController.index);
 routes.get('/cost_center/:id', CostCenterController.show);
@@ -24,9 +28,6 @@ routes.post('/send_email', EmailController.sendEmail);
 routes.get('/email/date', EmailController.searchForDate);
 routes.get('/email/:id', EmailController.showById);
 
-routes.post('/cost', CostControler.store);
-routes.get('/cost', CostControler.index);
-routes.put('/cost/:id', CostControler.update);
-routes.delete('/cost/:id', CostControler.destroy);
+routes.get('/billing', BillController.calculate);
 
 module.exports = routes;

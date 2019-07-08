@@ -4,6 +4,7 @@ const CostCenterSchema = mongoose.Schema({
     department: {
         type: String,
         required: true,
+        unique: true,
     },
     cod: {
         type: Number,

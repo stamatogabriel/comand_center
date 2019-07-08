@@ -1,7 +1,6 @@
 const axios = require('axios');
 
 const Sms = require('../models/Sms');
-const User = require('../models/User');
 
 removeNull = (value) => {
     (value !== null)
@@ -14,11 +13,10 @@ class SmsController {
         const message = req.body;
         try {
             const response = await axios.post(process.env.SMS_API, {
-                from: message.user_id,
+                from: req.userId,
                 to: message.to,
                 schedule: message.schedule,
-                msg: message.msg,
-                id: message._id
+                msg: message.msg
             }, {
                     headers: {
                         'Content-Type': 'application/json',
@@ -29,7 +27,7 @@ class SmsController {
 
             message.sendSmsResponse = response.data.sendSmsResponse;
 
-            const sms = await Sms.create(message)
+            const sms = await Sms.create({ ...message, user_id: req.userId })
 
             return res.send({ sms });
         } catch {
@@ -40,44 +38,52 @@ class SmsController {
     async searchForDate(req, res) {
         const { initialDate, lastDate, department } = req.body;
 
-        try {
-            let messages = await Sms.find({
-                schedule: {
-                    $gte: `${initialDate}`, $lte: `${lastDate}`
-                },
-            })
-                .populate({
-                    path: 'user_id',
-                    populate: {
-                        path: 'costCenter'
-                    }
+        if (req.userAdmin === true) {
+            try {
+                let messages = await Sms.find({
+                    schedule: {
+                        $gte: `${initialDate}`, $lte: `${lastDate}`
+                    },
                 })
-                .exec();
+                    .populate({
+                        path: 'user_id',
+                        populate: {
+                            path: 'costCenter'
+                        }
+                    })
+                    .exec();
 
-            if (!department)
+                if (!department)
+                    return res.send({ messages });
+
+                messages = messages.map(message =>
+                    (message.user_id.costCenter.department === department
+                        || message.user_id.costCenter.cod === department)
+                        ? message
+                        : null);
+
+                messages = messages.filter(removeNull);
+
                 return res.send({ messages });
-
-            messages = messages.map(message =>
-                (message.user_id.costCenter.department === department
-                    || message.user_id.costCenter.cod === department)
-                    ? message
-                    : null);
-
-            messages = messages.filter(removeNull);
-
-            return res.send({ messages });
-        } catch {
-            return res.status(400).send({ error: "Could not make the required request. Please, try again later!" })
+            } catch {
+                return res.status(400).send({ error: "Could not make the required request. Please, try again later!" })
+            }
+        } else {
+            res.send({ error: "Not authorized" });
         }
     }
 
     async showById(req, res) {
-        try {
-            const message = await Sms.findById(req.params.id);
+        if (req.userAdmin === true) {
+            try {
+                const message = await Sms.findById(req.params.id);
 
-            return res.send({ message });
-        } catch {
-            return res.status(400).send({ error: "Could not make the required request. Please, try again later!" })
+                return res.send({ message });
+            } catch {
+                return res.status(400).send({ error: "Could not make the required request. Please, try again later!" })
+            }
+        } else {
+            res.send({ error: "Not authorized" });
         }
     }
 }

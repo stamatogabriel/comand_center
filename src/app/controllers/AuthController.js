@@ -14,19 +14,23 @@ generateToken = (params = {}) => {
 class AuthController {
 
     async store(req, res) {
-        const { email } = req.body;
+        if (req.userAdmin === true) {
+            const { email } = req.body;
 
-        try {
-            if (await User.findOne({ email }))
-                return res.status(400).send({ error: 'User already exists' });
+            try {
+                if (await User.findOne({ email }))
+                    return res.status(400).send({ error: 'User already exists' });
 
-            const user = await User.create(req.body);
+                const user = await User.create(req.body);
 
-            user.password = undefined;
+                user.password = undefined;
 
-            return res.send({ user, token: generateToken({ id: user._id }) });
-        } catch (err) {
-            return res.status(400).send({ error: "Register failed. Please, try again." });
+                return res.send({ user });
+            } catch (err) {
+                return res.status(400).send({ error: "Register failed. Please, try again." });
+            }
+        } else {
+            res.send({ error: "Not authorized" });
         }
     }
 
@@ -43,7 +47,14 @@ class AuthController {
 
             user.password = undefined;
 
-            return res.send({ user, token: generateToken({ id: user._id }) });
+            return res.send({
+                user, token: generateToken({
+                    id: user._id,
+                    costCenter: user.costCenter,
+                    admin: user.admin
+                })
+            });
+
         } catch (err) {
             console.log(err)
             return res.status(400).send({ error: 'Something went wrong. Please try again.' })
